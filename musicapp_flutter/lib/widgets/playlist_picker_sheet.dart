@@ -95,6 +95,7 @@ class _PlaylistPickerSheetState extends State<_PlaylistPickerSheet> {
                           : Icon(Icons.add_circle_outline_rounded, color: colors.text2),
                       onTap: () async {
                         await context.read<LibraryProvider>().addTrackToPlaylist(playlist.id, widget.track);
+                        if (!mounted) return;
                         setState(() => _justAdded.add(playlist.id));
                       },
                     );
@@ -131,9 +132,11 @@ class _PlaylistPickerSheetState extends State<_PlaylistPickerSheet> {
                       );
                       return;
                     }
-                    final created = await context.read<LibraryProvider>().createPlaylist(name);
+                    final libraryProvider = context.read<LibraryProvider>();
+                    final created = await libraryProvider.createPlaylist(name);
                     if (created != null) {
-                      await context.read<LibraryProvider>().addTrackToPlaylist(created.id, widget.track);
+                      await libraryProvider.addTrackToPlaylist(created.id, widget.track);
+                      if (!mounted) return;
                       _controller.clear();
                       setState(() => _justAdded.add(created.id));
                     }
