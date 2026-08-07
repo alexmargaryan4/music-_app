@@ -51,7 +51,7 @@ class Track extends HiveObject {
   @HiveField(13)
   final String? country;
 
-  const Track({
+  Track({
     required this.trackId,
     this.trackName,
     this.artistName,
