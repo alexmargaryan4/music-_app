@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
 import '../state/chat_provider.dart';
-import '../state/library_provider.dart';
 import '../state/search_provider.dart';
 import '../state/settings_provider.dart';
 import '../theme/app_theme_extension.dart';

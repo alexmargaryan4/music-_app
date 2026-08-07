@@ -50,7 +50,6 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
 
   Widget _buildGrid(BuildContext context, LibraryProvider library) {
     final strings = context.watch<SettingsProvider>().strings;
-    final colors = context.colors;
     final playlists = library.playlists;
 
     return CustomScrollView(
