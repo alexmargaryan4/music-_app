@@ -10,7 +10,7 @@ on:
   workflow_dispatch: {}
 
 env:
-  FLUTTER_VERSION: "3.24.5"
+  FLUTTER_VERSION: "3.44.7"
   # The actual Flutter project (pubspec.yaml, lib/, android/, ios/) lives in
   # this subfolder of the repo, not at the repo root.
   PROJECT_DIR: musicapp_flutter
