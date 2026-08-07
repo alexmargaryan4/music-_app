@@ -1,0 +1,55 @@
+name: musicapp_flutter
+description: "MusicApp — search, favorites, playlists, AI recommendations and synced lyrics, powered by iTunes, Groq and LRCLIB."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State management
+  provider: ^6.1.2
+
+  # Networking
+  http: ^1.2.2
+
+  # Local persistence (favorites, playlists, recent, purchases, settings)
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.4
+
+  # Audio preview playback
+  just_audio: ^0.9.42
+
+  # UI polish
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.10+1
+  shimmer: ^3.0.0
+  cached_network_image: ^3.4.1
+  flutter_staggered_animations: ^1.1.1
+
+  # Utilities
+  intl: ^0.19.0
+  uuid: ^4.5.1
+  url_launcher: ^6.3.1
+  shared_preferences: ^2.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.13
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+
+  # Fonts are fetched at runtime via google_fonts (Fraunces + Inter),
+  # matching the web app's design tokens (see lib/theme/app_theme.dart).
