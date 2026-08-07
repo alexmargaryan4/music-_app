@@ -1,1 +1,6 @@
-
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Allows Flutter's hot-reload/debug service to talk to the local
+         dev server over plain HTTP. Not present in release builds. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application android:usesCleartextTraffic="true" />
+</manifest>
