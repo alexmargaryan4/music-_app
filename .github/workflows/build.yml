@@ -1,0 +1,139 @@
+name: Build MusicApp
+
+# Runs on every push/PR to main, and can also be triggered manually from the
+# "Actions" tab on GitHub (Run workflow button).
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+env:
+  FLUTTER_VERSION: "3.24.5"
+  # The actual Flutter project (pubspec.yaml, lib/, android/, ios/) lives in
+  # this subfolder of the repo, not at the repo root.
+  PROJECT_DIR: musicapp_flutter
+
+jobs:
+  # ---------------------------------------------------------------------
+  # Android: builds a *release* APK, but signed with the Flutter debug
+  # keystore instead of a real release key. That means the APK installs
+  # immediately on any device with "install from unknown sources" enabled
+  # — no keystore secrets to manage in CI. Do NOT ship this to the Play
+  # Store as-is; see the README for how to switch to a real signing key.
+  # ---------------------------------------------------------------------
+  build-android:
+    name: Android APK (debug-signed)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.PROJECT_DIR }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate Hive adapters (build_runner)
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Flutter analyze
+        run: flutter analyze --no-fatal-infos
+        continue-on-error: true
+
+      - name: Build release APK
+        # GROQ_API_KEY is read from a GitHub Actions secret so the real key
+        # never appears in the repository. See the README for how to set
+        # it under Settings -> Secrets and variables -> Actions.
+        # If the secret isn't set, this falls back to a placeholder string
+        # so the build still succeeds — the AI chat just won't work until
+        # a real key is provided.
+        run: |
+          flutter build apk --release \
+            --dart-define=GROQ_API_KEY="${GROQ_API_KEY:-REPLACE_WITH_YOUR_GROQ_API_KEY}"
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: musicapp-android-apk
+          path: ${{ env.PROJECT_DIR }}/build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 30
+
+  # ---------------------------------------------------------------------
+  # iOS: builds an *unsigned* release .app (flutter build ios --release
+  # --no-codesign) and packs it into a plain .ipa by hand, since without
+  # an Apple Developer account/certificate Xcode can't produce a signed
+  # archive. The resulting IPA cannot be installed as-is — you sign it
+  # yourself afterwards (e.g. with ESign, AltStore, or a real Apple
+  # signing certificate). See the README for that step.
+  # ---------------------------------------------------------------------
+  build-ios:
+    name: iOS IPA (unsigned)
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: ${{ env.PROJECT_DIR }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: "stable"
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate Hive adapters (build_runner)
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install --repo-update
+
+      - name: Build unsigned iOS release
+        run: |
+          flutter build ios --release --no-codesign \
+            --dart-define=GROQ_API_KEY="${GROQ_API_KEY:-REPLACE_WITH_YOUR_GROQ_API_KEY}"
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Package unsigned .ipa
+        run: |
+          set -e
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/Runner.app
+          # Zip with the .ipa extension: an IPA is just a zipped Payload/ dir.
+          zip -qr MusicApp-unsigned.ipa Payload
+          ls -la MusicApp-unsigned.ipa
+
+      - name: Upload unsigned IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: musicapp-ios-unsigned-ipa
+          path: ${{ env.PROJECT_DIR }}/build/ios/iphoneos/MusicApp-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 30
