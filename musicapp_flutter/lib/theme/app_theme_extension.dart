@@ -65,7 +65,7 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
     text1: AppColors.text1Dark,
     text2: AppColors.text2Dark,
     borderColor: AppColors.borderDark,
-    glassTint: const Color(0xFF23262C),
+    glassTint: Color(0xFF23262C),
     glassAlpha: 0.55,
     glassAlphaStrong: 0.78,
     accent: AppColors.accent500Dark,
